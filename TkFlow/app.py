@@ -6,12 +6,15 @@ from concurrent.futures import Future
 import queue
 import threading
 import tkinter as tk
+import time
+from ._workers import WorkerPool
 from tkinter import messagebox, ttk
 from ._layout import _Layout
 from ._helpers import Callback, _callback, _positive
 
 if TYPE_CHECKING:
     from . import App, Window, Container, Widget, Section, Row, Column
+    from .command import Command
 
 
 class _Window(_Layout):
@@ -84,12 +87,17 @@ class App(_Window):
     def __init__(self, title: str = "TkFlow", height: int = 480, width: int = 640,
                  *, min_height: int = 100, min_width: int = 100,
                  resizable: bool | tuple[bool, bool] = True, padding: Any = 12,
-                 spacing: int = 8, theme: str | None = None) -> None:
+                 spacing: int = 8, theme: str | None = None,
+                 max_workers: int = 4, max_pending: int = 64) -> None:
         if threading.current_thread() is not threading.main_thread():
             raise RuntimeError("Create App on the main thread")
         for name, value in (("height", height), ("width", width),
                             ("min_height", min_height), ("min_width", min_width)):
             _positive(value, name)
+        _positive(max_workers, "max_workers")
+        _positive(max_pending, "max_pending")
+        self._workers = WorkerPool(max_workers, max_pending)
+        self.stop_event = threading.Event()
         self.app = self
         self._thread_id = threading.get_ident()
         self._queue: queue.Queue[tuple[Callback, tuple[Any, ...]]] = queue.Queue()
@@ -125,7 +133,10 @@ class App(_Window):
 
     def _drain(self) -> None:
         # A bounded batch prevents a busy producer from starving the Tk event loop.
+        deadline = time.monotonic() + 0.005
         for _ in range(100):
+            if time.monotonic() >= deadline:
+                break
             if self._closed:
                 return
             try:
@@ -145,7 +156,7 @@ class App(_Window):
     def run_in_thread(self, command: Callback, *args: Any,
                       on_result: Callback | None = None,
                       on_error: Callback | None = None, **kwargs: Any) -> Future:
-        """Run work in a daemon thread; completion callbacks run on the GUI thread.
+        """Run work in the bounded daemon pool; completion callbacks run on the GUI thread.
 
         Workers must not access Tk. The Future represents the worker's result,
         not completion of the queued GUI callbacks. Running work cannot be killed.
@@ -158,23 +169,24 @@ class App(_Window):
         with self._delivery_lock:
             if self._closed:
                 raise RuntimeError("Cannot start work after the app has closed")
-        future: Future = Future()
+        future = self._workers.submit(command, *args, **kwargs)
 
-        def work() -> None:
-            if not future.set_running_or_notify_cancel():
+        def completed(result: Future) -> None:
+            if result.cancelled():
                 return
-            try:
-                result = command(*args, **kwargs)
-            except BaseException as error:
-                future.set_exception(error)
+            error = result.exception()
+            if error is not None:
                 self.call_soon(on_error or self._report_error, error)
-            else:
-                future.set_result(result)
-                if on_result is not None:
-                    self.call_soon(on_result, result)
+            elif on_result is not None:
+                self.call_soon(on_result, result.result())
 
-        threading.Thread(target=work, name="TkFlow-worker", daemon=True).start()
+        future.add_done_callback(completed)
         return future
+
+    def command(self, function: Callback, **options: Any) -> Command:
+        """Create a reusable Command (background by default)."""
+        from .command import Command
+        return Command(self, function, **options)
 
     def after(self, milliseconds: int, command: Callback, *args: Any) -> str:
         """Schedule on the GUI thread; returns an ID for root.after_cancel()."""
@@ -191,6 +203,8 @@ class App(_Window):
             return
         with self._delivery_lock:
             self._closed = True
+        self.stop_event.set()
+        self._workers.shutdown()
         self.root.after_cancel(self._poll_id)
         for window in self._windows:
             if not window._closed:
