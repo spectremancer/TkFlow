@@ -31,12 +31,15 @@ class Dropdown(_ValueWidget):
             value = self.values[0] if self.values else ""
         self._validate(value)
         changed = _command(parent.app, on_change, background, on_result, on_error)
+        state_binding = options.pop("bind", None)
         layout = _layout_options(options)
         self.variable = tk.StringVar(master=parent.widget, value=value)
         options.setdefault("state", "normal" if editable else "readonly")
         self._attach(parent, ttk.Combobox(parent.widget, values=self.values,
                                         textvariable=self.variable, **options), **layout)
         self.widget.bind("<<ComboboxSelected>>", lambda _: changed(self.get()))
+        if state_binding is not None:
+            self.bind_state(state_binding)
 
     def _validate(self, value: str) -> None:
         if not self.editable and value not in self.values and not (not self.values and value == ""):

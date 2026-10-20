@@ -15,8 +15,11 @@ class Label(Widget):
 
     def __init__(self, parent: App | Window | Container, text: str = "", **options: Any) -> None:
         parent.app._check_thread()
+        state_binding = options.pop("bind", None)
         layout = _layout_options(options)
         self._attach(parent, ttk.Label(parent.widget, text=text, **options), **layout)
+        if state_binding is not None:
+            self.bind_state(state_binding)
 
     def get(self) -> str:
         self._check()

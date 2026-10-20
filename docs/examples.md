@@ -9,6 +9,8 @@ Run every example from the repository root with `python -m examples.NAME`. No in
 | `examples.menus` | Five top-level menus, nested menus, themes, transformations, keyboard shortcuts, and a shared background Command |
 | `examples.chat` | Tagged transcript, Enter-to-send composer, busy state, and queued offline replies |
 | `examples.logging_gui` | Worker logging, print-like output, batched GUI insertion, and cooperative cancellation |
+| `examples.workbench` | Five complete screens combining state, components, tables, typed forms, progress/cancellation, dialogs, shortcuts, and themes |
+| `examples.layout_gallery` | Resizable grids, tabs, split panes, scrolling content, and collapsible sections |
 | `examples.dynamic_form` | Scrolling Form, validation, dropdowns/checkboxes, dynamic fields, reset, and submission |
 
 ## Menu workspace
@@ -58,3 +60,13 @@ xvfb-run -a python -m unittest discover -s tests -v
 ```
 
 The tests instantiate real Tk widgets, trigger example actions, wait for queued results while pumping the event loop, and assert visible output and values. They cover queue saturation, cancellation, shutdown, form validation/snapshot isolation, scrolling, log retention, and copied-folder imports. Dialog routing is mocked to keep tests noninteractive. Linux is validated in this environment; native macOS/Windows behavior still requires platform testing.
+
+## Complete workbench and layout gallery
+
+[Workbench source](../examples/workbench.py) · [Layout gallery source](../examples/layout_gallery.py)
+
+The workbench has Overview, Data, Forms, Tasks, and Controls screens with retained values and back navigation. Data demonstrates stable row IDs, sorting/filtering and selection. Forms combines grouped, typed, conditionally visible fields, a scrolling body, dirty tracking and a busy submit button. Tasks demonstrates cancellation-aware work and coalesced progress. Controls connects multiple widgets to the same State and opens a nonblocking input dialog. Keyboard shortcuts include Ctrl+1/Ctrl+2 navigation and Escape cancellation.
+
+The gallery isolates each layout so it is easy to copy a small pattern. Grid uses a wide spanning header and evenly resizing cards; Split panes uses a selected list and detail column; Scrollable content places disclosures in an independently scrollable body. Compact layouts are captured and inspected in the [screenshot workflow](testing.md).
+
+These examples are intentionally service-free. Move domain work into separate service modules when adapting them, and keep GUI operations on the main thread. The [architecture guide](architecture.md) shows a suggested module structure.

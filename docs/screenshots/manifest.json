@@ -1,0 +1,132 @@
+[
+  {
+    "name": "workbench-overview-wide",
+    "width": 1120,
+    "height": 780
+  },
+  {
+    "name": "workbench-data-wide",
+    "width": 1120,
+    "height": 780
+  },
+  {
+    "name": "workbench-forms-wide",
+    "width": 1120,
+    "height": 780
+  },
+  {
+    "name": "workbench-tasks-wide",
+    "width": 1120,
+    "height": 780
+  },
+  {
+    "name": "workbench-controls-wide",
+    "width": 1120,
+    "height": 780
+  },
+  {
+    "name": "workbench-overview-compact",
+    "width": 820,
+    "height": 620
+  },
+  {
+    "name": "workbench-data-compact",
+    "width": 820,
+    "height": 620
+  },
+  {
+    "name": "workbench-forms-compact",
+    "width": 820,
+    "height": 620
+  },
+  {
+    "name": "workbench-tasks-compact",
+    "width": 820,
+    "height": 620
+  },
+  {
+    "name": "workbench-controls-compact",
+    "width": 820,
+    "height": 620
+  },
+  {
+    "name": "form-validation",
+    "width": 820,
+    "height": 620
+  },
+  {
+    "name": "table-selection",
+    "width": 820,
+    "height": 620
+  },
+  {
+    "name": "input-dialog",
+    "width": 440,
+    "height": 190
+  },
+  {
+    "name": "notification",
+    "width": 820,
+    "height": 620
+  },
+  {
+    "name": "gallery-grid-wide",
+    "width": 960,
+    "height": 650
+  },
+  {
+    "name": "gallery-split-panes-wide",
+    "width": 960,
+    "height": 650
+  },
+  {
+    "name": "gallery-scrollable-content-wide",
+    "width": 960,
+    "height": 650
+  },
+  {
+    "name": "gallery-grid-compact",
+    "width": 720,
+    "height": 500
+  },
+  {
+    "name": "gallery-split-panes-compact",
+    "width": 720,
+    "height": 500
+  },
+  {
+    "name": "gallery-scrollable-content-compact",
+    "width": 720,
+    "height": 500
+  },
+  {
+    "name": "example-greeting",
+    "width": 440,
+    "height": 260
+  },
+  {
+    "name": "example-form",
+    "width": 560,
+    "height": 390
+  },
+  {
+    "name": "example-menus",
+    "width": 820,
+    "height": 540
+  },
+  {
+    "name": "example-chat",
+    "width": 740,
+    "height": 560
+  },
+  {
+    "name": "example-logging_gui",
+    "width": 840,
+    "height": 520
+  },
+  {
+    "name": "example-dynamic_form",
+    "width": 720,
+    "height": 640
+  }
+]

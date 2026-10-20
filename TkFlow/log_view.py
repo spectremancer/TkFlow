@@ -50,7 +50,7 @@ class LogView(TextArea):
         """Thread-safe nonblocking enqueue. Drop newest chunks when the queue is full."""
         text = str(text)
         if len(text) > self._max_message_chars:
-            text = text[:self._max_message_chars] + "… [truncated]\n"
+            text = text[:self._max_message_chars] + "... [truncated]\n"
         with self._buffer_lock:
             if self._accepting and not self.app._closed:
                 try:

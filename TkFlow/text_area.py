@@ -14,7 +14,7 @@ class TextArea(Widget):
     """A scrolling text widget. .widget is the frame; .text is native tk.Text."""
 
     def __init__(self, parent: App | Window | Container, value: str = "", *, readonly: bool = False,
-                 max_lines: int | None = None, autoscroll: bool = True, **options: Any) -> None:
+                 max_lines: int | None = None, autoscroll: bool = True, bind=None, **options: Any) -> None:
         parent.app._check_thread()
         if max_lines is not None:
             _positive(max_lines, "max_lines")
@@ -35,6 +35,8 @@ class TextArea(Widget):
         frame.columnconfigure(0, weight=1)
         self._attach(parent, frame, **layout)
         self.set(value)
+        if bind is not None:
+            self.bind_state(bind)
 
     def get(self) -> str:
         self._check()

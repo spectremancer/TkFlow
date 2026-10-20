@@ -4,7 +4,7 @@ from TkFlow import App, Button, Label, Menu, TextArea, TextInput
 
 
 def build_app() -> App:
-    app = App("TkFlow • local chat", height=560, width=740)
+    app = App("TkFlow - local chat", height=560, width=740)
     transcript = TextArea(app, readonly=True, max_lines=1000, expand=True, fill="both")
     transcript.text.tag_configure("you", foreground="#175cd3")
     transcript.text.tag_configure("assistant", foreground="#067647")
@@ -19,7 +19,7 @@ def build_app() -> App:
             raise ValueError("Type a message first")
         transcript.append(f"You: {text}\n\n", tag="you")
         message.set("")
-        status.set("Preparing reply… You can still resize and scroll.")
+        status.set("Preparing reply... You can still resize and scroll.")
         send.disable()
         return (text,)
 

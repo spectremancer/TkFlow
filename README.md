@@ -20,6 +20,24 @@ app.run()
 
 If your entry point is `ui/main.py`, run `python -m ui.main` **from the project root** so it can import the sibling TkFlow folder. A root-level `main.py` can run with `python main.py`. Relative internal imports also support a nested/renamed copy, such as `from utils.gui import App`.
 
+## A full application toolkit
+
+The library now also provides observable State binding, automatic command busy states and progress, cancellation and debounce, grids/tabs/split panes/scrolling/disclosures, numeric/date/radio/slider/progress/file controls, sortable/filterable tables and lists, reusable Components and ScreenStack navigation, richer conditional forms, semantic themes, custom dialogs, notifications, keyboard shortcuts, and developer helpers.
+
+```python
+from TkFlow import State, TextInput, Label, Button
+
+name = State("Developer")
+TextInput(section, bind=name)
+Label(section, bind=name)
+job = app.command(lambda text: f"Hello, {text}",
+                  prepare=lambda: (name.get(),), on_result=output.set,
+                  owner=section)
+Button(section, "Run", job, busy_text="Working...")
+```
+
+See the [expanded API guide](docs/toolkit.md) for complete signatures and the [architecture guide](docs/architecture.md) for how to organize a real project.
+
 ## Forms and background commands
 
 ```python
@@ -43,6 +61,8 @@ App's worker pool defaults to four daemon threads and 64 queued tasks. Queue sat
 From the repository root:
 
 ```bash
+python -m examples.workbench
+python -m examples.layout_gallery
 python -m examples.greeting
 python -m examples.form
 python -m examples.menus
@@ -60,6 +80,9 @@ All examples are self-contained: chat replies, document analysis, and saves are 
 - [Class reference](docs/reference.md)
 - [Commands, worker queues, errors, and shutdown](docs/commands.md)
 - [Form fields, validation, and submission](docs/forms.md)
+- [Expanded toolkit reference](docs/toolkit.md)
+- [Architecture and compatibility](docs/architecture.md)
+- [Testing and inspected screenshots](docs/testing.md)
 - [Example walkthroughs](docs/examples.md)
 
 ## Development
@@ -70,6 +93,6 @@ python -m unittest discover -s tests -v
 
 A desktop display is required for Tk windows. On headless Linux use `xvfb-run -a python -m unittest discover -s tests -v`. In the prepared cloud environment, first add `/workspace/.tkflow-env/root/usr/bin` to PATH. Run `python -m tkinter` to check a desktop Tk installation; Debian/Ubuntu may require `python3-tk`.
 
-Tests cover real widget behavior and the examples. Linux is validated; native Windows/macOS behavior still needs platform testing. Additional controls such as radio buttons, tables, sliders, and progress bars can be added in future iterations while preserving the simple class API and native Tk access.
+The 74 tests cover real widget behavior and the examples. The screenshot gallery includes 26 inspected captures with default/compact layouts, dialogs, validation, and busy states. Linux is validated; native Windows/macOS behavior still needs platform testing. The toolkit remains a plain copyable folder with native Tk access. Screenshots cover the example screens at standard and compact Linux sizes; OS-specific fonts, high DPI, and assistive technology still require target-platform testing.
 
 Licensed under GPL-3.0-only; see [LICENSE](LICENSE).

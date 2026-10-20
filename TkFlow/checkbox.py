@@ -22,10 +22,13 @@ class Checkbox(_ValueWidget):
         if not isinstance(value, bool):
             raise TypeError("Checkbox value must be a bool")
         changed = _command(parent.app, command, background, on_result, on_error)
+        state_binding = options.pop("bind", None)
         layout = _layout_options(options)
         self.variable = tk.BooleanVar(master=parent.widget, value=value)
         self._attach(parent, ttk.Checkbutton(parent.widget, text=text, variable=self.variable,
                                             command=lambda: changed(self.get()), **options), **layout)
+        if state_binding is not None:
+            self.bind_state(state_binding)
 
     def set(self, value: bool) -> Checkbox:
         if not isinstance(value, bool):

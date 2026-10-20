@@ -6,7 +6,7 @@ from TkFlow import App, Button, Dropdown, Label, LogView, Menu
 
 
 def build_app() -> App:
-    app = App("TkFlow • job monitor", height=520, width=840, max_workers=2)
+    app = App("TkFlow - job monitor", height=520, width=840, max_workers=2)
     controls = app.row(padding=0)
     count = Dropdown(controls, ["10", "50", "200"], value="10")
     status = Label(app, "Choose a job length, then start.")
@@ -19,7 +19,7 @@ def build_app() -> App:
 
     def prepare():
         cancel_event.clear()
-        status.set("Working…")
+        status.set("Working...")
         return (int(count.get()),)
 
     def run_job(steps):

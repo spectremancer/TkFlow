@@ -16,11 +16,35 @@ class Button(Label):
     def __init__(self, parent: App | Window | Container, text: str = "",
                  command: Callback | None = None, *, background: bool = False,
                  on_result: Callback | None = None, on_error: Callback | None = None,
+                 busy_text: str | None = None, disable_while_running: bool = True,
                  **options: Any) -> None:
         parent.app._check_thread()
         self._invoke = _command(parent.app, command, background, on_result, on_error)
+        self.command = command
+        state_binding = options.pop("bind", None)
         layout = _layout_options(options)
         self._attach(parent, ttk.Button(parent.widget, text=text, command=self._invoke, **options), **layout)
+
+        if state_binding is not None:
+            self.bind_state(state_binding)
+        from .command import Command
+        if isinstance(command, Command):
+            saved_text, saved_disabled = text, False
+            def busy_changed(busy):
+                nonlocal saved_text, saved_disabled
+                if busy:
+                    saved_text = self.get()
+                    saved_disabled = self.widget.instate(["disabled"])
+                    if busy_text is not None:
+                        self.set(busy_text)
+                    if disable_while_running:
+                        self.disable()
+                else:
+                    if busy_text is not None:
+                        self.set(saved_text)
+                    if disable_while_running and not saved_disabled:
+                        self.enable()
+            self.on_dispose(command.busy.subscribe(busy_changed, immediate=False))
 
     def invoke(self) -> Any:
         """Invoke unless disabled, returning the result or background Future."""

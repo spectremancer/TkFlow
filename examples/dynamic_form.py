@@ -4,7 +4,7 @@ from TkFlow import App, Form, Label, Menu
 
 
 def build_app() -> App:
-    app = App("TkFlow • registration form", height=640, width=720)
+    app = App("TkFlow - registration form", height=640, width=720)
     form = Form(app, "Team registration", expand=True, fill="both")
     form.add_label("Enter contact details below. Use the scrollbar for additional fields.", wraplength=560)
     form.add_text("name", "Full name", required=True)

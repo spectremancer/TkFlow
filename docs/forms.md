@@ -55,7 +55,7 @@ form.remove("office")
 form.add_text("office", "Office", value="Remote")
 ```
 
-`form.fields[name]` is a `FormField` containing `control`, `label`, `row`, `error_label`, `default`, `required`, and `validator`. For conditional fields, use `form.fields[name].row.hide()` / `.show()`. **Hidden fields still participate in get, reset, and validation.** Update requirements/validators yourself, or remove the field if it should not be part of submitted data.
+`form.fields[name]` is a `FormField` containing `control`, `label`, `row`, `error_label`, `default`, `required`, and `validator`. For manual visibility, use `form.fields[name].row.hide()` / `.show()`. For conditional validation/submission, use the newer `visible_when` option described in the toolkit guide. **Hidden fields still participate in get, reset, and validation.** Update requirements/validators yourself, or remove the field if it should not be part of submitted data.
 
 `form.body` is the field container. Additional decorative controls may be added there, but only named field methods register values. `form.actions` is the button row. In a scrollable form, leave the canvas-managed body's geometry alone. Use the scrollbar to navigate; this iteration does not install global mouse-wheel or automatic focus-scrolling hooks.
 
@@ -88,6 +88,10 @@ Keep validators fast: they run on the GUI thread. Network validation belongs in 
 
 Invalid data never reaches the worker. Inline messages are always updated. If `on_error` is provided it also receives validation errors; otherwise validation errors remain inline and unexpected worker errors go to Tk's error reporting. Result/error handlers are suppressed after the Form is destroyed.
 
-The returned Button exposes `.command`, the reusable Command instance. Repeated submissions of the same button while it is busy share the current Future. Fields remain editable during work, and callbacks see the original captured values. `.command.running` and `.command.cancel()` allow inspection and cancellation of queued work. To show a busy state, manage the button in your own prepare/result/error handlers using an explicit Command, or display progress in a Label/LogView. The helper suppresses duplicate work without automatically disabling fields.
+The returned Button exposes `.command`, the reusable Command instance. Repeated submissions of the same button while it is busy share the current Future. Fields remain editable during work, and callbacks see the original captured values. `.command.running` and `.command.cancel()` allow inspection and cancellation of queued work. To show a busy state, manage the button in your own prepare/result/error handlers using an explicit Command, or display progress in a Label/LogView. The helper suppresses duplicate work and automatically disables its submit button while busy; fields remain editable. Customize its `busy_text` caption.
 
 `add_button(text, command, **button_options)` adds an ordinary action to the action row. Its callback takes no arguments and is synchronous unless you pass a Command or `background=True`. Use it for reset, adding more fields, or opening a help window. Each separately created submit button has its own Command; share an explicit Command if different actions must share one busy policy.
+
+## Extended forms
+
+See [the toolkit guide](toolkit.md) for schema construction, field groups, multiline/numeric/date/radio/file fields, converters, conditional snapshots, cross-field validators, live validation, and dirty-state baselines.

@@ -75,7 +75,7 @@ future = app.run_in_thread(
 
 ## Cancellation and closing
 
-`command.cancel()` attempts to cancel queued work and returns a bool. A running function cannot be killed by Future cancellation. Use a `threading.Event` checked by the function:
+`command.cancel()` signals its cooperative cancellation Event, cancels pending debounce, and attempts to cancel queued work. Its bool return still describes Future cancellation only. A running function cannot be killed by Future cancellation. Use a `threading.Event` checked by the function:
 
 ```python
 import threading
@@ -102,6 +102,10 @@ Button(app, "Cancel", cancel.set)
 
 `app.stop_event` is set when closing the app. Workers may check that Event; it has no Tk dependency. Shutdown cancels queued tasks, stops idle workers, discards queued GUI deliveries, and destroys windows. Running daemon workers may continue until they finish or the process exits. Critical writes need application-level shutdown coordination; never assume a worker finishes after the window is closed.
 
-App shutdown suppresses completion delivery. Destroying a **particular widget or secondary window** while the app remains open does not automatically cancel unrelated Command objects: guard result handlers or coordinate that lifetime. Form's own submission helper suppresses its user result/error handlers when that Form is destroyed.
+App shutdown suppresses completion delivery. Set `owner=widget_or_window` to cancel and suppress delivery when a particular owner dies. Without an owner, guard result handlers with `widget.safe(callback)` or coordinate that lifetime. Form's own submission helper suppresses its user result/error handlers when that Form is destroyed.
 
 For CPU-heavy workloads, Python threads may still contend for the GIL. Use a process or a separately managed service, with a GUI-safe delivery bridge and timeouts, if genuine CPU parallelism is required. TkFlow does not provide a process pool.
+
+## Extended command lifecycle
+
+See [the toolkit guide](toolkit.md) for `busy`, progress, CommandContext cancellation, owner-scoped cleanup, automatic busy buttons, and debounced commands.

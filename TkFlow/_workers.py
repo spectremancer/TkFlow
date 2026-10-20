@@ -44,6 +44,9 @@ class WorkerPool:
                     else:
                         future.set_result(result)
             finally:
+                # Do not retain UI-capturing callback graphs while idle.
+                del future, function, args, kwargs
+                result = None
                 self._tasks.task_done()
 
     def shutdown(self):

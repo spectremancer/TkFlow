@@ -154,3 +154,7 @@ Global stdout/stderr are not redirected. This avoids capturing unrelated librari
 ## Form and Command
 
 [Form guide](forms.md) describes `Form`, `FormField`, `FormValidationError`, field methods, and submission. [Command guide](commands.md) describes `Command(app, function, prepare=None, background=True, on_result=None, on_error=None, on_done=None)`, its Future/busy policy, and pool behavior.
+
+## Expanded application toolkit
+
+The [toolkit reference](toolkit.md) documents State, CommandContext, Grid, Tabs, SplitPane, ScrollColumn, Collapsible, NumericInput, RadioGroup, Slider, ProgressBar, DateInput, FilePicker, Table, ListView, Component, ScreenStack, Theme, Dialog, InputDialog, Notification, and the new Widget/Form/Command helpers. [Developer tooling and visual validation](testing.md) has the test and screenshot workflow.

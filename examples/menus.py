@@ -4,7 +4,7 @@ from TkFlow import App, Button, Label, Menu, TextArea, Window
 
 
 def build_app() -> App:
-    app = App("TkFlow • menu workspace", height=540, width=820)
+    app = App("TkFlow - menu workspace", height=540, width=820)
     workspace = app.section("Workspace", expand=True, fill="both")
     editor = TextArea(workspace, "Try the File, Edit, View, Tools, and Help menus.\n",
                       expand=True, fill="both", undo=True)
@@ -62,7 +62,7 @@ def build_app() -> App:
 
     help_menu = menu.dropdown("Help")
     help_menu.add_command("Quick help", show_help)
-    help_menu.add_command("About", lambda: app.message("TkFlow • copyable GUI classes"))
+    help_menu.add_command("About", lambda: app.message("TkFlow - copyable GUI classes"))
     Button(app, "Analyze (same command as Tools menu)", analyze_command)
     app.demo = SimpleNamespace(editor=editor, status=status, menu=menu, analyze=analyze_command, new=new)
     return app

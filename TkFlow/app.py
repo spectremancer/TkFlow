@@ -8,6 +8,7 @@ import threading
 import tkinter as tk
 import time
 from ._workers import WorkerPool
+from . import _resources
 from tkinter import messagebox, ttk
 from ._layout import _Layout
 from ._helpers import Callback, _callback, _positive
@@ -24,6 +25,7 @@ class _Window(_Layout):
                       spacing: int) -> None:
         self._init_layout("vertical", spacing)
         self._closed = False
+        self._cleanups = []
         self.set_title(title)
         self.set_size(height=height, width=width)
         self.set_min_size(height=min_height, width=min_width)
@@ -31,6 +33,86 @@ class _Window(_Layout):
         self.widget = ttk.Frame(self.root, padding=padding)
         self.widget.pack(fill="both", expand=True)
         self.root.protocol("WM_DELETE_WINDOW", self.close)
+
+    def on_dispose(self, callback):
+        self.app._check_thread()
+        self._cleanups.append(callback)
+        return callback
+
+    def _run_cleanups(self):
+        callbacks, self._cleanups = self._cleanups, []
+        for callback in reversed(callbacks):
+            try:
+                callback()
+            except Exception as error:
+                self.app._report_error(error)
+        self._cleanups.clear()
+
+    def safe(self, callback):
+        def guarded(*args, **kwargs):
+            self.app._check_thread()
+            if not self._closed and not self.app._closed:
+                return callback(*args, **kwargs)
+        return guarded
+
+    def _button_key(self, sequence, button):
+        active = True
+        def trigger(event):
+            if not button._destroyed and not (sequence == "<Return>" and isinstance(event.widget, tk.Text)):
+                button.invoke()
+                return "break"
+        binding = self.root.bind(sequence, trigger, add="+")
+        def remove():
+            nonlocal active
+            if active:
+                self.root.unbind(sequence, binding)
+                active = False
+        self.on_dispose(remove)
+        button.on_dispose(remove)
+        return remove
+
+    def set_default_button(self, button):
+        """Activate a button with Enter, leaving multiline Text editing intact."""
+        self.app._check_thread()
+        return self._button_key("<Return>", button)
+
+    def set_cancel_button(self, button):
+        self.app._check_thread()
+        return self._button_key("<Escape>", button)
+
+    def focus_order(self, *controls):
+        """Install explicit Tab/Shift-Tab order, skipping hidden/disabled controls."""
+        self.app._check_thread()
+        bindings = []
+        def move(index, direction):
+            for offset in range(1, len(controls) + 1):
+                candidate = controls[(index + direction * offset) % len(controls)]
+                target = candidate._focus_target()
+                if not candidate._destroyed and target.winfo_viewable() and not (
+                        hasattr(target, "instate") and target.instate(["disabled"])):
+                    candidate.focus()
+                    break
+            return "break"
+        for index, control in enumerate(controls):
+            target = control._focus_target()
+            for sequence, direction in (("<Tab>", 1), ("<Shift-Tab>", -1), ("<ISO_Left_Tab>", -1)):
+                binding = target.bind(sequence, lambda event, i=index, d=direction: move(i, d), add="+")
+                bindings.append((target, sequence, binding))
+        active = True
+        def remove():
+            nonlocal active
+            if active:
+                for target, sequence, binding in bindings:
+                    if target.winfo_exists():
+                        target.unbind(sequence, binding)
+                bindings.clear()
+                if remove in self._cleanups:
+                    self._cleanups.remove(remove)
+                active = False
+        self.on_dispose(remove)
+        for control in controls:
+            control.on_dispose(remove)
+        return remove
 
     def set_title(self, title: str) -> _Window:
         self.app._check_thread()
@@ -74,6 +156,7 @@ class _Window(_Layout):
         self.app._check_thread()
         if not self._closed:
             self._closed = True
+            self._run_cleanups()
             for child in self._children:
                 child._dispose()
             self.root.destroy()
@@ -104,7 +187,9 @@ class App(_Window):
         self._delivery_lock = threading.Lock()
         self._closed = False
         self._windows: list[Window] = []
+        _resources.drain()
         self.root = tk.Tk()
+        _resources.retain(self)
         try:
             self.style = ttk.Style(self.root)
             if theme is not None:
@@ -132,6 +217,7 @@ class App(_Window):
                 self._queue.put((command, args))
 
     def _drain(self) -> None:
+        _resources.drain()
         # A bounded batch prevents a busy producer from starving the Tk event loop.
         deadline = time.monotonic() + 0.005
         for _ in range(100):
@@ -188,6 +274,28 @@ class App(_Window):
         from .command import Command
         return Command(self, function, **options)
 
+    def shortcut(self, sequence, command, *, owner=None):
+        """Install a keyboard shortcut; return an explicit unsubscriber."""
+        self._check_thread()
+        active = True
+        def trigger(event):
+            if active and (owner is None or not getattr(owner, "_destroyed", False)
+                           and not getattr(owner, "_closed", False)):
+                command()
+                return "break"
+        binding = self.root.bind(sequence, trigger, add="+")
+        def remove():
+            nonlocal active
+            if active:
+                self.root.unbind(sequence, binding)
+                active = False
+        (owner or self).on_dispose(remove)
+        return remove
+
+    def notify(self, text, *, kind="info", duration=4000):
+        from .notification import Notification
+        return Notification(self, text, kind=kind, duration=duration)
+
     def after(self, milliseconds: int, command: Callback, *args: Any) -> str:
         """Schedule on the GUI thread; returns an ID for root.after_cancel()."""
         self._check_thread()
@@ -203,11 +311,13 @@ class App(_Window):
             return
         with self._delivery_lock:
             self._closed = True
+        self._run_cleanups()
         self.stop_event.set()
         self._workers.shutdown()
         self.root.after_cancel(self._poll_id)
         for window in self._windows:
             if not window._closed:
+                window._run_cleanups()
                 for child in window._children:
                     child._dispose()
                 window._closed = True

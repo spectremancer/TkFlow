@@ -65,7 +65,7 @@ class TkFlowTests(unittest.TestCase):
         first.show()
         self.assertEqual(first.widget.grid_info()["row"], 0)
         first.destroy()
-        self.assertFalse(first.variable.trace_info())
+        self.assertIsNone(first.variable._tk)
         replacement = Label(section, "New")
         self.assertNotEqual(replacement.widget.grid_info()["row"], second.widget.grid_info()["row"])
         section.destroy()
@@ -235,7 +235,7 @@ class TkFlowTests(unittest.TestCase):
         entry = TextInput(window, on_change=lambda value: None)
         self.app.close()
         self.assertTrue(window._closed)
-        self.assertFalse(entry.variable.trace_info())
+        self.assertIsNone(entry.variable._tk)
 
     def test_dialogs_have_parent(self):
         with patch("TkFlow.app.messagebox.showinfo", return_value="ok") as show:
@@ -338,9 +338,9 @@ class ExampleTests(unittest.TestCase):
         name.set("Ada")
         save.invoke()
         self.assertTrue(save.widget.instate(["disabled"]))
-        self.assertEqual(status.get(), "Saving…")
+        self.assertEqual(status.get(), "Saving...")
         deadline = time.monotonic() + 3
-        while status.get() == "Saving…" and time.monotonic() < deadline:
+        while status.get() == "Saving..." and time.monotonic() < deadline:
             app.root.update()
             time.sleep(0.005)
         self.assertEqual(status.get(), "Saved Ada (Developer), notifications: on")

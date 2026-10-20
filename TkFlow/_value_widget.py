@@ -23,3 +23,8 @@ class _ValueWidget(Widget):
             self.variable.trace_remove("write", self._trace_id)
             self._trace_id = None
         super()._dispose()
+        if self.variable._tk is not None:
+            # Variables are owned here, not by composite controls aliasing them.
+            # Release on the GUI thread before a worker can collect the wrapper.
+            self.variable.__del__()
+            self.variable._tk = None

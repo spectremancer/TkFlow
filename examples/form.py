@@ -34,7 +34,7 @@ def build_app() -> App:
         # Capture widget values on the main thread before starting the worker.
         values = (name.get(), role.get(), notifications.get())
         save.disable()
-        status.set("Saving…")
+        status.set("Saving...")
         app.run_in_thread(prepare_profile, *values, on_result=complete, on_error=failed)
 
     save = Button(app, "Save profile", command=submit)

@@ -20,7 +20,17 @@ class TextInput(_ValueWidget):
                  **options: Any) -> None:
         parent.app._check_thread()
         changed = _command(parent.app, on_change, background, on_result, on_error)
+        state_binding = options.pop("bind", None)
         layout = _layout_options(options)
         self.variable = tk.StringVar(master=parent.widget, value=value)
         self._attach(parent, ttk.Entry(parent.widget, textvariable=self.variable, **options), **layout)
-        self._trace_id = self.variable.trace_add("write", lambda *_: changed(self.get())) if on_change else None
+        def notify(*_):
+            try:
+                value = self.get()
+            except ValueError:
+                # Typed subclasses such as DateInput permit incomplete editing.
+                return
+            changed(value)
+        self._trace_id = self.variable.trace_add("write", notify) if on_change else None
+        if state_binding is not None:
+            self.bind_state(state_binding)
