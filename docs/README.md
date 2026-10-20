@@ -11,7 +11,8 @@ Read the guides in this order, or jump to a specific task:
 5. [Expanded toolkit API](toolkit.md): state binding, all new layouts/controls, tables, navigation, command lifecycle, and richer forms.
 6. [Application architecture](architecture.md): project structure, ownership, service boundaries, extension points, and compatibility.
 7. [Testing and visual review](testing.md): real-widget tests, developer helpers, screenshot reproduction, and review scope.
-8. [Example walkthroughs](examples.md): menus, chat, GUI logs, and a schema-driven form.
+8. [SQLiteFlow CRUD and database integration](sqlite.md): schemas, dictionary CRUD, filters, transactions, thread-safe connections, and a persistent contacts app.
+9. [Example walkthroughs](examples.md): menus, chat, GUI logs, and a schema-driven form.
 
 TkFlow controls, native Tkinter widgets, and Tk variables belong to the main thread. `Command` provides the capture → worker → GUI callback sequence for blocking operations. Queued logging has a separate bounded buffer so high-volume logs do not require a GUI callback for every record.
 

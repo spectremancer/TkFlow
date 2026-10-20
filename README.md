@@ -56,11 +56,30 @@ Construct controls **before** `app.run()`. Form supports dynamic fields, scrolli
 
 App's worker pool defaults to four daemon threads and 64 queued tasks. Queue saturation fails immediately instead of blocking the GUI. LogView provides a separate bounded message queue with batched insertion and retained-line limits. Arbitrary slow GUI callbacks can still freeze Tk; use the command pattern for blocking work and timeouts for external I/O.
 
+## SQLiteFlow: database CRUD
+
+Copy the sibling **`SQLiteFlow/` folder** alongside TkFlow (or use it independently). It provides ordinary dictionary CRUD with parameterized filters, transactions, foreign keys, and per-operation worker-safe connections:
+
+```python
+from SQLiteFlow import Database, Column
+
+with Database("data/app.sqlite3") as db:
+    contacts = db.create_table("contacts", {"name":str, "email":Column(str, unique=True)})
+    identity = contacts.insert(name="Ada", email="ada@example.com")
+    contact = contacts.get(identity)
+    contacts.update(identity, name="Ada Lovelace")
+    rows = contacts.find({"name__contains":"Ada"}, order_by="name")
+    contacts.delete(identity)
+```
+
+Pass form dictionaries into CRUD methods from a TkFlow background Command. See [the complete SQLiteFlow guide](docs/sqlite.md) and run `python -m examples.database_crud` for a persistent contacts application.
+
 ## Runnable examples
 
 From the repository root:
 
 ```bash
+python -m examples.database_crud
 python -m examples.workbench
 python -m examples.layout_gallery
 python -m examples.greeting
@@ -81,6 +100,7 @@ All examples are self-contained: chat replies, document analysis, and saves are 
 - [Commands, worker queues, errors, and shutdown](docs/commands.md)
 - [Form fields, validation, and submission](docs/forms.md)
 - [Expanded toolkit reference](docs/toolkit.md)
+- [SQLiteFlow CRUD and GUI integration](docs/sqlite.md)
 - [Architecture and compatibility](docs/architecture.md)
 - [Testing and inspected screenshots](docs/testing.md)
 - [Example walkthroughs](docs/examples.md)
@@ -93,6 +113,6 @@ python -m unittest discover -s tests -v
 
 A desktop display is required for Tk windows. On headless Linux use `xvfb-run -a python -m unittest discover -s tests -v`. In the prepared cloud environment, first add `/workspace/.tkflow-env/root/usr/bin` to PATH. Run `python -m tkinter` to check a desktop Tk installation; Debian/Ubuntu may require `python3-tk`.
 
-The 74 tests cover real widget behavior and the examples. The screenshot gallery includes 26 inspected captures with default/compact layouts, dialogs, validation, and busy states. Linux is validated; native Windows/macOS behavior still needs platform testing. The toolkit remains a plain copyable folder with native Tk access. Screenshots cover the example screens at standard and compact Linux sizes; OS-specific fonts, high DPI, and assistive technology still require target-platform testing.
+The 96 tests cover real widget behavior and the examples. The screenshot gallery includes 28 inspected captures with default/compact layouts, dialogs, validation, and busy states. Linux is validated; native Windows/macOS behavior still needs platform testing. The toolkit remains a plain copyable folder with native Tk access. Screenshots cover the example screens at standard and compact Linux sizes; OS-specific fonts, high DPI, and assistive technology still require target-platform testing.
 
 Licensed under GPL-3.0-only; see [LICENSE](LICENSE).

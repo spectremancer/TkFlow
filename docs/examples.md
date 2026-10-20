@@ -1,6 +1,6 @@
 # Example walkthroughs
 
-Run every example from the repository root with `python -m examples.NAME`. No installation, external service, or credential is required. On headless Linux use `xvfb-run -a python -m examples.NAME`.
+Run every example from the repository root with `python -m examples.NAME`. No installation, external service, or credential is required. The database example stores its local SQLite file under the ignored examples/data directory. On headless Linux use `xvfb-run -a python -m examples.NAME`.
 
 | Module | Demonstrates |
 | --- | --- |
@@ -9,6 +9,7 @@ Run every example from the repository root with `python -m examples.NAME`. No in
 | `examples.menus` | Five top-level menus, nested menus, themes, transformations, keyboard shortcuts, and a shared background Command |
 | `examples.chat` | Tagged transcript, Enter-to-send composer, busy state, and queued offline replies |
 | `examples.logging_gui` | Worker logging, print-like output, batched GUI insertion, and cooperative cancellation |
+| `examples.database_crud` | Persistent SQLite CRUD connected to a TkFlow form, selected table rows, background commands, and constraint-error reporting |
 | `examples.workbench` | Five complete screens combining state, components, tables, typed forms, progress/cancellation, dialogs, shortcuts, and themes |
 | `examples.layout_gallery` | Resizable grids, tabs, split panes, scrolling content, and collapsible sections |
 | `examples.dynamic_form` | Scrolling Form, validation, dropdowns/checkboxes, dynamic fields, reset, and submission |
@@ -70,3 +71,11 @@ The workbench has Overview, Data, Forms, Tasks, and Controls screens with retain
 The gallery isolates each layout so it is easy to copy a small pattern. Grid uses a wide spanning header and evenly resizing cards; Split panes uses a selected list and detail column; Scrollable content places disclosures in an independently scrollable body. Compact layouts are captured and inspected in the [screenshot workflow](testing.md).
 
 These examples are intentionally service-free. Move domain work into separate service modules when adapting them, and keep GUI operations on the main thread. The [architecture guide](architecture.md) shows a suggested module structure.
+
+## SQLite contacts application
+
+[Source](../examples/database_crud.py) · [SQLiteFlow guide](sqlite.md)
+
+The contact manager connects Table selection to Form values and uses a single shared Command to serialize create/read/update/delete/search requests. Preparation validates and captures data on the GUI thread. The worker performs the transaction and returns the resulting records. Rendering refreshes the GUI and restores selection without accessing a worker connection.
+
+The split-pane layout keeps the table and editor visible; the form's action buttons remain outside its scrollable body. On compact windows, table columns have minimum readable widths and use horizontal scrolling. Initialization is asynchronous. Sample records are inserted only for a new database; deleting every record does not cause reseeding the next time it opens. Constraint errors keep the current form contents for correction. The screenshots use a temporary database and do not touch your persisted contacts.

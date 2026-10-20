@@ -10,7 +10,7 @@ python -m unittest discover -s tests -v
 xvfb-run -a python -m unittest discover -s tests -v
 ```
 
-The suite contains 74 tests and creates real Tk widgets. They verify state propagation and unsubscription, keyboard activation, shared-command busy state, queue saturation, coalesced progress, debounce, cancellation, owner destruction, table operations, typed and conditional forms, navigation hooks, dialogs, notifications, and each runnable example. Existing copied-folder import tests run in isolated child projects without installed packages.
+The suite contains 96 tests and creates real Tk widgets. They verify state propagation and unsubscription, keyboard activation, shared-command busy state, queue saturation, coalesced progress, debounce, cancellation, owner destruction, table operations, typed and conditional forms, navigation hooks, dialogs, notifications, and each runnable example. Existing copied-folder import tests run in isolated child projects without installed packages.
 
 Example test pattern:
 
@@ -62,3 +62,9 @@ Screenshots and tests demonstrate the checked Linux sizes/states. They do not es
 The checked-in manifest contains 26 captures: five workbench screens at 1120×780 and 820×620 client sizes, three gallery tabs at 960×650 and 720×500, the input dialog, notification, validation-error state, selected/filtered table, and the six earlier examples. The captures were opened and visually inspected after the layout fixes. Native menu-bar height is included in image bounds in addition to client height.
 
 The shutdown tests also force cyclic garbage collection on a worker after disposing multiple applications. Managed variables release on the GUI thread and interpreter handles are retained until final release can happen there; this prevents native Tcl finalization from being triggered on the wrong thread by a completed worker's callback graph.
+
+## SQLiteFlow integration
+
+The additional [database tests](../tests/test_sqliteflow.py) run without a display or Tkinter. They cover all CRUD methods, parameterization, schema/foreign-key constraints, nested transaction rollback, concurrent updates, close semantics, and copied-folder imports. [Database GUI tests](../tests/test_database_gui.py) exercise a persistent file, selection-to-form data, create/edit/search/delete, validation/uniqueness errors, and a deliberately held database write lock while the GUI timer continues to run.
+
+Capture the database example separately with `python -m tools.capture_database` under Xvfb. It uses temporary data and records two additional inspected screenshots and `database-manifest.json`, leaving the original 26-capture manifest intact. The complete checked-in gallery therefore contains 28 images.

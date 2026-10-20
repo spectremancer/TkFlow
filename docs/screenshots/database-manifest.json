@@ -1,0 +1,12 @@
+[
+  {
+    "name": "database-crud-wide",
+    "width": 1000,
+    "height": 700
+  },
+  {
+    "name": "database-crud-compact",
+    "width": 820,
+    "height": 580
+  }
+]
